@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'config/metadata.html' %}
+    <!-- Intégration de React via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    
+    <style>
+        /* Reset et base responsive */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Empêche le scroll non désiré */
+            background-color: #050505;
+        }
+
+        /* Vidéo de fond adaptative */
+        .bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Remplit l'écran sans déformer */
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* Conteneur principal */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100dvh; /* Adapte la hauteur aux navigateurs mobiles */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Écran de démarrage (Overlay) */
+        .intro-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            cursor: pointer;
+        }
+        .intro-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .start-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'derk', monospace;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: blink 2s infinite;
+        }
+        .start-text:hover {
+            color: #ff3333;
+            text-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
+        }
+
+        /* Titre principal */
+        .animate-title {
+            font-family: 'derk', monospace;
+            font-size: clamp(2.5rem, 8vw, 6rem); /* Taille dynamique selon l'écran */
+            color: #ffffff;
+            text-shadow: 0 0 0.40em #bababa;
+            margin: 0 0 20px 0;
+            text-align: center;
+            letter-spacing: 2px;
+            word-break: break-word; /* Évite de déborder sur mobile */
+        }
+
+        /* Conteneur des liens sociaux */
+        .socials {
+            display: flex;
+            flex-wrap: wrap; /* Essentiel pour le mobile : les boutons s'empilent */
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        /* Boutons de liens */
+        .social-link {
+            text-decoration: none;
+            font-family: derk, monospace;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            color: #a0a0a0;
+            padding: 12px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1 1 auto; /* Permet aux boutons de s'adapter à l'espace */
+            min-width: 120px;
+            max-width: max-content;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .social-link:hover {
+            color: #fff;
+            border-color: #ff3333;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
+            transform: translateY(-3px);
+        }
+
+        /* Délais d'apparition des boutons */
+        .social-link:nth-child(1) { animation-delay: 0.2s; }
+        .social-link:nth-child(2) { animation-delay: 0.4s; }
+        .social-link:nth-child(3) { animation-delay: 0.6s; }
+        .social-link:nth-child(4) { animation-delay: 0.8s; }
+
+        /* Animations générales */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .title-cursor {
+            animation: blink 1s step-end infinite;
+            color: #bababa;
+        }
+
+        .glitch-text {
+            position: relative;
+            display: inline-block;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            pointer-events: none;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff3333;
+            animation: glitch-anim-top 1.5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 #8b0000;
+            animation: glitch-anim-bottom 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-top {
+            0% { clip-path: inset(10% 0 60% 0); transform: translate(-1px, 0); }
+            20% { clip-path: inset(80% 0 5% 0); transform: translate(1px, 0); }
+            40% { clip-path: inset(40% 0 40% 0); transform: translate(-1px, 0); }
+            60% { clip-path: inset(15% 0 70% 0); transform: translate(1px, 0); }
+            80% { clip-path: inset(60% 0 20% 0); transform: translate(-1px, 0); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(0, 0); }
+        }
+        @keyframes glitch-anim-bottom {
+            0% { clip-path: inset(70% 0 15% 0); transform: translate(1px, 0); }
+            20% { clip-path: inset(20% 0 50% 0); transform: translate(-1px, 0); }
+            40% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 0); }
+            60% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, 0); }
+            80% { clip-path: inset(80% 0 5% 0); transform: translate(1px, 0); }
+            100% { clip-path: inset(40% 0 40% 0); transform: translate(0, 0); }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="react-root"></div>
+
+    <script>
+        window.flaskName = "{{ name }}";
+    </script>
+    <script type="text/babel">
+        {% raw %}
+        const { useState, useEffect, useRef } = React;
+
+        function App() {
+            const [hasStarted, setHasStarted] = useState(false);
+            const [displayedName, setDisplayedName] = useState("");
+            const [isTypingDone, setIsTypingDone] = useState(false);
+            const typingSound = useRef(typeof Audio !== "undefined" ? new Audio('../static/assets/audio/typing.mp3') : null);
+
+            useEffect(() => {
+                if (!hasStarted) return;
+
+                const fullText = window.flaskName || "TryWarz";
+                const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+                let iteration = 0;
+
+                if (typingSound.current) {
+                    typingSound.current.volume = 0.5;
+                    typingSound.current.loop = true;
+                    typingSound.current.play().catch(err => console.warn("Audio bloqué", err));
+                }
+
+                const typingInterval = setInterval(() => {
+                    setDisplayedName(
+                        fullText.split("").map((letter, index) => {
+                            if (index < iteration) return letter;
+                            return letters[Math.floor(Math.random() * letters.length)];
+                        }).join("")
+                    );
+
+                    if (iteration >= fullText.length) {
+                        clearInterval(typingInterval);
+                        setIsTypingDone(true);
+                        if (typingSound.current) {
+                            typingSound.current.pause();
+                        }
+                    }
+                    iteration += 1 / 4; // Ajuste la vitesse de révélation des vraies lettres
+                }, 35); // Vitesse du défilement des caractères buggés
+
+                return () => {
+                    clearInterval(typingInterval);
+                    if (typingSound.current) typingSound.current.pause();
+                };
+            }, [hasStarted]);
+
+            const handleStart = () => {
+                const audio = document.getElementById("audio");
+                if (audio) {
+                    audio.volume = 0.4;
+                    audio.play().catch(err => console.warn("Audio bloqué", err));
+                }
+                
+                const video = document.getElementById("video");
+                if (video) {
+                    video.play().catch(err => console.warn("Vidéo bloquée", err));
+                }
+                setHasStarted(true);
+            };
+
+            return (
+                <main>
+                    {/* Écran de démarrage géré par React */}
+                    <div className={`intro-overlay ${hasStarted ? 'hidden' : ''}`} onClick={handleStart}>
+                        <span className="start-text" style={{ textAlign: 'center' }}>System Ready<br/><span style={{ fontSize: '0.5em' }}>Click to establish connection</span></span>
+                    </div>
+
+                    <audio loop preload="auto" id="audio">
+                        <source src="../static/assets/audio/audio.mp3" type="audio/mp3" />
+                    </audio>
+                    
+                    <video autoPlay muted loop playsInline preload="auto" className="bg-video" id="video">
+                        <source src="../static/assets/images/bg.mp4" type="video/mp4" />
+                    </video>
+
+                    {/* Contenu Principal */}
+                    <section className="main-content">
+                        <h1 
+                            className={`animate-title ${isTypingDone ? 'glitch-text' : ''}`} 
+                            data-text={isTypingDone ? (window.flaskName || "TryWarz") : ""}
+                        >
+                            {hasStarted ? displayedName : ""}
+                            {!isTypingDone && hasStarted ? <span className="title-cursor">_</span> : null}
+                        </h1>
+                        
+                        {isTypingDone && (
+                            <div className="socials">
+                                    <a href="projects" className="social-link">Projects</a>
+                                <a href="profile" className="social-link">Profile</a>
+                                <a href="offucats" className="social-link">Offucats</a>
+                                <a href="https://github.com/TryWarz" className="social-link" target="_blank">Github</a>
+                                <a href="https://discord.gg/Zue4fx73Nq" className="social-link" target="_blank">Discord</a>
+                            </div>
+                        )}
+                        
+                        <div style={{ position: 'absolute', bottom: '20px', fontFamily: 'monospace', fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)', textAlign: 'center', width: '100%', pointerEvents: 'none' }}>
+                            &gt;_ ping 127.0.0.1... | Dev status: "It works on my machine" ¯\_(ツ)_/¯
+                        </div>
+                    </section>
+                </main>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('react-root'));
+        root.render(<App />);
+        {% endraw %}
+    </script>
+</body>
+</html>
+                

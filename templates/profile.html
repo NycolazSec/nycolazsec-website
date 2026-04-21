@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        {% include 'config/metadata.html' %}
+        <meta charset="utf-8" />
+        <title>TryWarz</title>
+        <link
+            rel="icon"
+            href=""
+        />
+        <style type="text/css">
+            body {
+                background-color: #050505;
+                color: #e0e0e0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100dvh;
+                margin: 0;
+                padding: 20px;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Tahoma, sans-serif;
+                background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+            }
+            .profile-text {
+                font-family: monospace;
+                color: #bababa;
+                font-size: clamp(0.85em, 3vw, 1.05em);
+                line-height: 1.6;
+                white-space: pre-wrap; /* Permet d'afficher les sauts de ligne \n */
+                word-break: break-word;
+            }
+            .terminal-container {
+                background: rgba(10, 10, 10, 0.6);
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 850px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 249, 0.03);
+                overflow: hidden;
+            }
+            .terminal-header {
+                background: rgba(255, 255, 255, 0.03);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                color: #888;
+                font-family: monospace;
+                font-size: 0.9em;
+            }
+            .window-controls {
+                display: flex;
+                gap: 8px;
+                margin-right: 20px;
+            }
+            .control {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+            }
+            .control.close { background-color: #ff5f56; }
+            .control.minimize { background-color: #ffbd2e; }
+            .control.maximize { background-color: #27c93f; }
+            .terminal-body {
+                padding: clamp(20px, 5vw, 40px);
+            }
+            .return-link {
+                color: #555;
+                text-decoration: none;
+                font-family: monospace;
+                transition: color 0.3s ease;
+            }
+            .return-link:hover {
+                color: #00fff9;
+            }
+            .cursor {
+                display: inline-block;
+                width: 10px;
+                height: 1.2em;
+                background-color: #00ffff; /* Couleur bleu électrique */
+                box-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff; /* Halo lumineux (effet éclair) */
+                vertical-align: middle;
+                margin-left: 4px;
+                animation: electric-flicker 1.5s infinite;
+            }
+            /* Animation de grésillement type éclair / néon défectueux */
+            @keyframes electric-flicker {
+                0%, 100% { opacity: 1; background-color: #00ffff; box-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff; }
+                30%, 36%, 70%, 74% { opacity: 1; }
+                32%, 38%, 72% { opacity: 0; box-shadow: none; }
+                34% { opacity: 1; background-color: #ffffff; box-shadow: 0 0 20px #ffffff, 0 0 40px #00ffff; } /* Flash blanc intense */
+            }
+        </style>
+        <!-- Intégration de React via CDN -->
+        <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    </head>
+    <body>
+        <div id="react-root"></div>
+        
+        <script type="text/babel">
+            {% raw %}
+            const { useState, useEffect } = React;
+
+            const FULL_TEXT = `TryWarz is a Python developer.
+
+Website Language: Python (and a lot of StackOverflow copy-pasting).
+
+I am a highly skilled and experienced Python developer with a strong passion for writing clean, efficient, and scalable code (when it actually works on my machine).
+I have a deep understanding of Python's syntax and frameworks, though I still have to Google how to exit Vim.
+
+With my logical thinking and problem-solving skills, I excel at designing efficient algorithms. I am dedicated to continuously learning and staying up-to-date with the latest zero-days.
+
+Let's collaborate and create amazing Python applications together! (Or just drop some tables, whatever).`;
+
+            function Profile() {
+                const [displayedText, setDisplayedText] = useState("");
+
+                useEffect(() => {
+                    let currentIndex = 0;
+                    const typingInterval = setInterval(() => {
+                        if (currentIndex <= FULL_TEXT.length) {
+                            setDisplayedText(FULL_TEXT.slice(0, currentIndex));
+                            currentIndex++;
+                        } else {
+                            clearInterval(typingInterval);
+                        }
+                    }, 25); // Vitesse d'écriture en millisecondes
+
+                    return () => clearInterval(typingInterval);
+                }, []);
+
+                return (
+                    <div className="terminal-container">
+                        <div className="terminal-header">
+                            <div className="window-controls">
+                                <span className="control close"></span>
+                                <span className="control minimize"></span>
+                                <span className="control maximize"></span>
+                            </div>
+                            root@trywarz:~# cat profile.txt
+                        </div>
+                        <div className="terminal-body">
+                            <div className="profile-text">
+                                {displayedText}
+                                <span className="cursor"></span>
+                            </div>
+                            <div style={{ marginTop: '40px' }}>
+                                <a href="/" className="return-link">$&gt; cd .. (Return to root)</a>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            
+            const root = ReactDOM.createRoot(document.getElementById('react-root'));
+            root.render(<Profile />);
+            {% endraw %}
+        </script>
+    </body>
+</html>
+        

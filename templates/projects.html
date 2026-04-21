@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% include 'config/metadata.html' %}
+        <meta charset="utf-8" />
+        <title>TryWarz - Projects</title>
+        <style type="text/css">
+            body {
+                background-color: #050505;
+                color: #e0e0e0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100dvh;
+                margin: 0;
+                padding: 40px 20px;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Tahoma, sans-serif;
+                background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+            }
+            .terminal-container {
+                background: rgba(10, 10, 10, 0.6);
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 1000px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 51, 51, 0.08);
+                overflow: hidden;
+                animation: fadeInUp 0.8s ease-out forwards;
+            }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .terminal-header {
+                background: rgba(255, 255, 255, 0.03);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                color: #888;
+                font-family: monospace;
+                font-size: 0.9em;
+            }
+            .window-controls {
+                display: flex;
+                gap: 8px;
+                margin-right: 20px;
+            }
+            .control { width: 12px; height: 12px; border-radius: 50%; }
+            .control.close { background-color: #ff5f56; }
+            .control.minimize { background-color: #ffbd2e; }
+            .control.maximize { background-color: #27c93f; }
+            .terminal-body {
+                padding: clamp(20px, 5vw, 40px);
+            }
+            .title {
+                font-weight: 800;
+                font-size: clamp(2rem, 5vw, 2.5rem);
+                margin: 0 0 30px 0;
+                background: linear-gradient(135deg, #ff3333, #8b0000);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-align: center;
+            }
+            
+            /* Headers de Section */
+            .section-header {
+                color: #ff3333;
+                font-family: monospace;
+                font-size: 1.1rem;
+                margin: 40px 0 20px 0;
+                padding-bottom: 8px;
+                border-bottom: 1px dashed rgba(255, 51, 51, 0.3);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .section-header:first-of-type { margin-top: 0; }
+
+            /* Grille robuste */
+            .projects-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+                width: 100%;
+            }
+
+            /* Design des cartes Ultra Clean */
+            .clean-card {
+                background: rgba(15, 15, 15, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+                padding: 22px;
+                display: flex;
+                flex-direction: column;
+                text-decoration: none;
+                transition: all 0.25s ease;
+                min-width: 0; /* Fix ultime des bugs de débordement Grid */
+                box-sizing: border-box;
+            }
+            .clean-card:hover {
+                background: rgba(20, 20, 20, 0.9);
+                border-color: rgba(255, 51, 51, 0.5);
+                transform: translateY(-4px);
+                box-shadow: 0 10px 25px rgba(255, 51, 51, 0.15);
+            }
+
+            /* Spécial Cursnet (Core System) */
+            .core-system {
+                background: linear-gradient(145deg, rgba(255, 51, 51, 0.08), rgba(10, 10, 10, 0.6));
+                border: 1px solid rgba(255, 51, 51, 0.4);
+                margin-bottom: 40px;
+            }
+            .core-system:hover {
+                box-shadow: 0 12px 35px rgba(255, 51, 51, 0.25);
+            }
+            .core-system .card-desc { -webkit-line-clamp: unset; color: #ccc; font-size: 1rem; }
+            .core-system .card-title { color: #ff3333; white-space: normal; }
+            .core-system .card-footer { border-top-color: rgba(255, 51, 51, 0.2); }
+
+            /* Contenu des cartes */
+            .card-title {
+                color: #fff;
+                font-family: monospace;
+                font-size: 1.2rem;
+                font-weight: bold;
+                margin: 0 0 12px 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .icon { 
+                color: #ff3333; 
+                flex-shrink: 0; 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.15em; /* Fait légèrement ressortir l'emoji */
+                line-height: 1;
+            }
+            
+            .card-desc {
+                color: #aaa;
+                font-size: 0.95rem;
+                line-height: 1.5;
+                flex-grow: 1; /* Pousse les stats vers le bas, garantissant un alignement parfait */
+                margin: 0 0 18px 0;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                word-break: break-word;
+            }
+            
+            .card-footer {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding-top: 15px;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+                font-family: monospace;
+                font-size: 0.85rem;
+                transition: border-color 0.3s;
+            }
+            .clean-card:hover .card-footer { border-top-color: rgba(255, 51, 51, 0.2); }
+            
+            /* Système de Badges Ultra Clean */
+            .stat { 
+                display: inline-flex; 
+                align-items: center; 
+                gap: 6px; 
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 6px 10px;
+                border-radius: 6px;
+                color: #ccc;
+                line-height: 1;
+                white-space: nowrap;
+            }
+            
+            /* Badges spécifiques pour Cursnet */
+            .core-system .stat {
+                background: rgba(255, 51, 51, 0.08);
+                border: 1px solid rgba(255, 51, 51, 0.25);
+                color: #ffb3b3;
+            }
+            .core-system .stat.alert {
+                background: rgba(255, 51, 51, 0.15);
+                border-color: #ff5f56;
+                color: #ff5f56;
+                font-weight: bold;
+            }
+            
+            .return-link {
+                color: #555;
+                text-decoration: none;
+                font-family: monospace;
+                transition: color 0.3s ease;
+                display: inline-block;
+            }
+            .return-link:hover { color: #ff3333; }
+            .loading-text {
+                text-align: center;
+                color: #ff3333;
+                font-family: monospace;
+                animation: blink 1.5s infinite;
+            }
+            @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        </style>
+        <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    </head>
+    <body>
+        <div id="react-root"></div>
+        <script type="text/babel">
+            {% raw %}
+            const { useState, useEffect } = React;
+
+            function Projects() {
+                const [repos, setRepos] = useState([]);
+                const [loading, setLoading] = useState(true);
+                const GITHUB_USERNAME = "TryWarz"; // Ton pseudo GitHub
+
+                useEffect(() => {
+                    // Récupère les 6 derniers dépôts modifiés
+                    fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (Array.isArray(data)) {
+                                // Filtre le repo GitHub s'il s'appelle déjà Cursnet pour éviter un doublon
+                                setRepos(data.filter(r => r.name.toLowerCase() !== 'cursnet'));
+                            }
+                            setLoading(false);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            setLoading(false);
+                        });
+                }, []);
+
+                return (
+                    <div className="terminal-container">
+                        <div className="terminal-header">
+                            <div className="window-controls">
+                                <span className="control close"></span>
+                                <span className="control minimize"></span>
+                                <span className="control maximize"></span>
+                            </div>
+                            root@trywarz:~/projects# ls -la
+                        </div>
+                        <div className="terminal-body">
+                            <h1 className="title">Classified Projects</h1>
+                            
+                            <div className="section-header">&gt;_ Core Infrastructure [CLASSIFIED]</div>
+                            
+                            {/* --- PROJET PHARE : CURSNET --- */}
+                            <div className="clean-card core-system">
+                                <h3 className="card-title">
+                                    <span className="icon">🛡️</span> 
+                                    <span>Cursnet [CORE SYSTEM]</span>
+                                </h3>
+                                <p className="card-desc">
+                                    Advanced <strong>closed-source</strong> Kernel-level firewall and secure tunneling infrastructure. Designed to shield client-server architectures from sophisticated Layer 4/Layer 7 volumetric attacks, Cursnet establishes highly encrypted, low-latency network tunnels. By hooking directly into the OS Kernel-space for high-speed packet processing, it performs Deep Packet Inspection (DPI) and drops malicious payloads before they ever reach user-space applications. Engineered for zero-trust environments requiring robust, enterprise-grade mitigation.
+                                </p>
+                                <div className="card-footer">
+                                    <span className="stat alert"><span className="icon">🚫</span> Closed Source</span>
+                                    <span className="stat"><span className="icon">🔒</span> Kernel-Space</span>
+                                    <span className="stat"><span className="icon">🛡️</span> L4/L7 Mitigation</span>
+                                    <span className="stat"><span className="icon">🌐</span> Encrypted Tunnels</span>
+                                </div>
+                            </div>
+
+                            <div className="section-header">&gt;_ Public Repositories [GITHUB]</div>
+
+                            {loading ? (
+                                <p className="loading-text">&gt;_ Fetching data from GitHub Network...</p>
+                            ) : (
+                                <div className="projects-grid">
+                                    {repos.map(repo => (
+                                        <a key={repo.id} href={repo.html_url} target="_blank" className="clean-card">
+                                            <h3 className="card-title">
+                                                <span className="icon">📁</span> 
+                                                <span>{repo.name}</span>
+                                            </h3>
+                                            <p className="card-desc">{repo.description || "No description provided. Stealth mode."}</p>
+                                            <div className="card-footer">
+                                                {repo.language && <span className="stat"><span className="icon">⚡</span> {repo.language}</span>}
+                                                <span className="stat"><span className="icon">⭐</span> {repo.stargazers_count}</span>
+                                                <span className="stat"><span className="icon">🍴</span> {repo.forks_count}</span>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                            <div style={{ marginTop: '20px' }}>
+                                <a href="/" className="return-link">$&gt; cd .. (Return to root)</a>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            
+            const root = ReactDOM.createRoot(document.getElementById('react-root'));
+            root.render(<Projects />);
+            {% endraw %}
+        </script>
+    </body>
+</html>

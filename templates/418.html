@@ -1,0 +1,101 @@
+<!-- <html>
+    <body>
+        <h1>Error 418: I'm a teapot</h1>
+        <p>I'm sorry, but I'm a teapot. I cannot brew coffee.</p>
+    </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'config/metadata.html' %}
+    <style>
+        body {
+            overflow: hidden;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .floating-teapot {
+            animation: float 4s ease-in-out infinite;
+            display: block;
+            margin: 0 auto;
+            width: 150px;
+            filter: drop-shadow(0 10px 20px rgba(0, 255, 249, 0.2));
+        }
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .error-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 30px 0 15px;
+            background: linear-gradient(90deg, #ff00c1, #00fff9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .error-desc {
+            color: #a0a0a0;
+            font-size: 1.2rem;
+            max-width: 500px;
+        }
+        .return-link {
+            margin-top: 30px;
+            color: #00fff9;
+            text-decoration: none;
+            font-family: monospace;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        .return-link:hover {
+            text-shadow: 0 0 10px rgba(0, 255, 249, 0.6);
+        }
+    </style>
+    <!-- Intégration de React via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+
+<body>
+    <div id="react-root"></div>
+    
+    <script type="text/babel">
+        {% raw %}
+        function Error418() {
+            return (
+                <main>
+                    <div className="error-container">
+                        <img src="../static/assets/images/teapot.png" alt="Teapot" className="floating-teapot" />
+                        <h1 className="error-title">Error 418: I'm a teapot</h1>
+                        <p className="error-desc">
+                            I'm sorry, but I'm a teapot. I cannot brew coffee.<br/><br/>
+                            <span style={{ color: '#ff5f56', fontSize: '0.95rem', fontFamily: 'monospace' }}>
+                                [!] CRITICAL: The teapot is currently unresponsive due to a massive Layer 7 DDOS attack from Silence Network.
+                            </span>
+                        </p>
+                        <a href="/" className="return-link">$&gt; Return Home</a>
+                    </div>
+                </main>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('react-root'));
+        root.render(<Error418 />);
+        {% endraw %}
+    </script>
+</body>
+</html>
+                

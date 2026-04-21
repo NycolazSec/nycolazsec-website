@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Offucats</title>
+    <meta name="description" content="Description de votre site">
+    <meta name="keywords" content="trywarz, TryWarz, website">
+    <meta name="author" content="Silence Network">
+    <meta name="robots" content="index, follow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../static/assets/ico/favicon.ico">
+    <meta property="og:title" content="TryWarz">
+    <meta property="og:description" content="TryWarz Status">
+    <meta property="og:image" content="https://avatars.githubusercontent.com/u/39384332?v=4">
+    <meta property="og:url" content="https://trywarz.com/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TryWarz">
+    <meta name="twitter:description" content="Just Skill...">
+    <meta name="twitter:image" content="https://trywarz.com/">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CodeMirror CDN Links -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/theme/darcula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/python/python.min.js"></script>
+
+    <!-- Clipboard.js CDN Link -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+
+    <!-- Intégration de React via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<style>
+    /* Reset et Base */
+    body {
+        background-color: #050505;
+        color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+    }
+
+    /* Conteneur principal (Terminal) */
+    .terminal-container {
+        background: rgba(10, 10, 10, 0.6);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 850px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 51, 51, 0.08);
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* En-tête du terminal */
+    .terminal-header {
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        color: #888;
+        font-family: monospace;
+        font-size: 0.9em;
+    }
+    .window-controls {
+        display: flex;
+        gap: 8px;
+        margin-right: 20px;
+    }
+    .control { width: 12px; height: 12px; border-radius: 50%; }
+    .control.close { background-color: #ff5f56; }
+    .control.minimize { background-color: #ffbd2e; }
+    .control.maximize { background-color: #27c93f; }
+
+    /* Corps du terminal */
+    .terminal-body {
+        padding: clamp(20px, 5vw, 40px);
+    }
+
+    /* Typographie */
+    .title {
+        font-weight: 800;
+        font-size: clamp(2rem, 5vw, 2.5rem);
+        margin: 0 0 30px 0;
+        background: linear-gradient(135deg, #ff3333, #8b0000);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+    }
+
+    /* Formulaires et Inputs */
+    .form-group {
+        margin-bottom: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .form-label { color: #aaa; font-weight: 500; font-size: 0.95rem; }
+    
+    .custom-file-input {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-family: monospace;
+        width: 100%;
+        box-sizing: border-box;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Évite les bugs visuels si le nom du fichier est trop long */
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .custom-file-input:focus, .custom-file-input:hover {
+        border-color: #ff3333;
+        box-shadow: 0 0 0 4px rgba(255, 51, 51, 0.15);
+        outline: none;
+    }
+    .custom-file-input::file-selector-button {
+        background: #222;
+        color: #ff3333;
+        border: 1px solid rgba(255, 51, 51, 0.3);
+        padding: 8px 16px;
+        border-radius: 6px;
+        margin-right: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: monospace;
+    }
+    .custom-file-input::file-selector-button:hover {
+        background: #ff3333;
+        color: #000;
+    }
+
+    /* Boutons */
+    .submit-btn {
+        background: #ff3333;
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 12px 35px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: block;
+        margin: 0 auto;
+    }
+    .submit-btn:hover:not(:disabled) {
+        box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+        transform: translateY(-2px);
+    }
+    .submit-btn:disabled {
+        background: #555;
+        color: #888;
+        cursor: not-allowed;
+    }
+
+    /* Sortie CodeMirror */
+    .output-section {
+        margin-top: 40px;
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+    .output-title { color: #fff; font-size: 1.5rem; margin-bottom: 15px; }
+    
+    .CodeMirror {
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        height: auto;
+        min-height: 200px;
+        font-family: monospace;
+    }
+
+    .copy-btn {
+        background: transparent;
+        color: #ff3333;
+        border: 1px solid #ff3333;
+        padding: 10px 20px;
+        border-radius: 20px;
+        margin-top: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: monospace;
+        display: inline-block;
+    }
+    .copy-btn:hover {
+        background: #ff3333;
+        color: #fff;
+        box-shadow: 0 0 15px rgba(255, 51, 51, 0.4);
+    }
+
+    /* Liens */
+    .return-link {
+        color: #555;
+        text-decoration: none;
+        font-family: monospace;
+        transition: color 0.3s ease;
+        display: inline-block;
+        margin-top: 30px;
+    }
+    .return-link:hover {
+        color: #ff3333;
+    }
+</style>
+<body>
+    <div id="react-root"></div>
+
+    <script type="text/babel">
+        {% raw %}
+        const { useState, useRef, useEffect, Fragment } = React;
+
+        function OffucatsApp() {
+            const [file, setFile] = useState(null);
+            const [content, setContent] = useState(null);
+            const [error, setError] = useState(null);
+            const [loading, setLoading] = useState(false);
+            
+            const textAreaRef = useRef(null);
+            const codeMirrorRef = useRef(null);
+
+            const handleFileChange = (e) => {
+                setFile(e.target.files[0]);
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!file) return;
+
+                setLoading(true);
+                setError(null);
+                setContent(null);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                try {
+                    const response = await fetch("/offucats", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        setError(data.error || "Une erreur est survenue.");
+                    } else {
+                        setContent(data.content);
+                    }
+                } catch (err) {
+                    setError("Erreur réseau lors de l'envoi.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Initialiser CodeMirror et Clipboard.js lorsque le contenu est reçu
+            useEffect(() => {
+                if (content && textAreaRef.current) {
+                    if (!codeMirrorRef.current) {
+                        codeMirrorRef.current = CodeMirror.fromTextArea(textAreaRef.current, {
+                            mode: "python",
+                            lineNumbers: true,
+                            readOnly: false,
+                            theme: "darcula",
+                            tabSize: 4
+                        });
+                    } else {
+                        codeMirrorRef.current.setValue(content);
+                    }
+
+                    const copyBtn = document.getElementById('copy-button');
+                    if (copyBtn) {
+                        const clipboard = new ClipboardJS(copyBtn, {
+                            text: () => codeMirrorRef.current.getValue()
+                        });
+                        clipboard.on('success', (e) => {
+                            alert('Code copié dans le presse-papier !');
+                            e.clearSelection();
+                        });
+                        return () => clipboard.destroy(); // Nettoyage lors du démontage
+                    }
+                }
+            }, [content]);
+
+            return (
+                <div className="terminal-container">
+                    <div className="terminal-header">
+                        <div className="window-controls">
+                            <span className="control close"></span>
+                            <span className="control minimize"></span>
+                            <span className="control maximize"></span>
+                        </div>
+                        root@trywarz:~/offucats# ./obfuscate.py
+                    </div>
+                    
+                    <div className="terminal-body">
+                        <h1 className="title">Offucats</h1>
+
+                        {error && <p style={{ color: "#ff5f56", textAlign: "center", fontFamily: "monospace" }}>[!] {error}</p>}
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="file" className="form-label">Select a Python file (No backdoors inside, trust me bro 🤝)</label>
+                                <input type="file" id="file" className="custom-file-input" onChange={handleFileChange} accept=".py" required />
+                            </div>
+                            <button type="submit" className="submit-btn" disabled={loading}>
+                                {loading ? "Compiling spaghetti code..." : "Obfuscate & Pray"}
+                            </button>
+                        </form>
+
+                        {content && (
+                            <Fragment>
+                                <div className="output-section">
+                                    <h3 className="output-title">Output</h3>
+                                    <div id="offuquer-output">
+                                        <textarea ref={textAreaRef} defaultValue={content}></textarea>
+                                        <button id="copy-button" className="copy-btn">$&gt; Copy Code</button>
+                                    </div>
+                                </div>
+                            </Fragment>
+                        )}
+                        
+                        <div style={{ textAlign: 'center' }}>
+                            <p style={{ color: '#555', fontSize: '0.85rem', fontFamily: 'monospace', marginTop: '40px' }}>
+                                &gt;_ "I have no idea why this code works, but it does."
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <a href="/" className="return-link">$&gt; cd .. (Return to root)</a>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('react-root'));
+        root.render(<OffucatsApp />);
+        {% endraw %}
+    </script>
+</body>
+</html>
