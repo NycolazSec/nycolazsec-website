@@ -75,4 +75,4 @@ def im_a_teapot(e):
 
 if __name__ == "__main__":
     tests.DatabaseTest(host=db.Database().host, user=db.Database().user, password=db.Database().password, database=db.Database().db)
-    flask_app.run(debug=flask_app.config.get("DEBUG", False), host='127.0.0.1', port=5000)
+    flask_app.run(debug=flask_app.config.get("DEBUG", False), host='0.0.0.0', port=80)
