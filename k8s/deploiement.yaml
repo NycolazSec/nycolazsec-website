@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nycolazsec-flask
+  template:
+    metadata:
+      labels:
+        app: nycolazsec-flask
+    spec:
+      containers:
+      - name: flask-container
+        imagePullPolicy: Never   
+        image: nycolazsec-app:v1
+        ports:
+        - containerPort: 8000 
